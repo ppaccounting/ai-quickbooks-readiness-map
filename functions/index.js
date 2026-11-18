@@ -18,13 +18,14 @@ export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSec
  if(typeof turnstileToken!=='string'||turnstileToken.length<10||turnstileToken.length>2048)return fail(400,'Verification required');
  if(!answers||typeof answers!=='object'||Array.isArray(answers)||!fit||typeof fit!=='object')return fail(400,'Invalid answers');
  for(const q of questions){const v=answers[q.id];if(q.multi){if(!Array.isArray(v)||v.length<1||v.length>2||new Set(v).size!==v.length||v.some(x=>!Number.isInteger(x)||x<0||x>=q.options.length))return fail(400,'Invalid answers');}else if(!Number.isInteger(v)||v<0||v>=q.options.length)return fail(400,'Invalid answers');}
+ if(Object.keys(answers).length!==questions.length)return fail(400,'Invalid answers');
  if(!['qbo','desktop','other','none'].includes(fit.platform)||!['simple','complex','unsure'].includes(fit.complexity))return fail(400,'Invalid business fit');
  try{
  const body=new URLSearchParams({secret:turnstileSecret.value(),response:turnstileToken,remoteip:req.ip||''});
  const check=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body,signal:AbortSignal.timeout(8000)});
  if(!check.ok)throw Error('Turnstile unavailable');
  const verified=await check.json();
- if(!verified.success)return fail(403,'Verification failed; please try again');
+ if(!verified.success||verified.hostname!=='aiqbomap.profitablepenny.com')return fail(403,'Verification failed; please try again');
  const roadmap=evaluate(answers,fit);
  await getFirestore().collection('readiness_submissions').add({createdAt:FieldValue.serverTimestamp(),ruleVersion:roadmap.version,answers,fit,roadmap,source:'creator-pivot-summit'});
  return res.status(200).json({success:true,roadmap});
