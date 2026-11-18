@@ -5,7 +5,8 @@ import {defineSecret} from 'firebase-functions/params';
 import {evaluate,questions} from './engine.js';
 initializeApp();
 const turnstileSecret=defineSecret('TURNSTILE_SECRET');
-const origins=new Set(['https://aiqbomap.profitablepenny.com']);
+const allowedHosts=new Set(['aiqbomap.profitablepenny.com','be2fe016-ai-quickbooks-readiness-map.profitablepenny.workers.dev']);
+const origins=new Set([...allowedHosts].map(host=>'https://'+host));
 export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSecret],maxInstances:10,timeoutSeconds:30},async(req,res)=>{
  const origin=req.get('origin');
  if(origin&&origins.has(origin))res.set('Access-Control-Allow-Origin',origin);
@@ -25,7 +26,7 @@ export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSec
  const check=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body,signal:AbortSignal.timeout(8000)});
  if(!check.ok)throw Error('Turnstile unavailable');
  const verified=await check.json();
- if(!verified.success||verified.hostname!=='aiqbomap.profitablepenny.com')return fail(403,'Verification failed; please try again');
+ if(!verified.success||!allowedHosts.has(verified.hostname))return fail(403,'Verification failed; please try again');
  const roadmap=evaluate(answers,fit);
  await getFirestore().collection('readiness_submissions').add({createdAt:FieldValue.serverTimestamp(),ruleVersion:roadmap.version,answers,fit,roadmap,source:'creator-pivot-summit'});
  return res.status(200).json({success:true,roadmap});
