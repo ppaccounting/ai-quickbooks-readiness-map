@@ -34,7 +34,7 @@ export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSec
  const roadmap=evaluate(answers,fit);
  await getFirestore().collection('readiness_submissions').add({createdAt:FieldValue.serverTimestamp(),ruleVersion:roadmap.version,answers,fit,roadmap,source:'creator-pivot-summit'});
  return res.status(200).json({success:true,roadmap});
- catch(e){
+} catch(e){
   console.error('Roadmap backend failure', {
     message: e?.message,
     cause: e?.cause?.message,
