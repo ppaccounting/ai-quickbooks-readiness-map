@@ -34,5 +34,12 @@ export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSec
  const roadmap=evaluate(answers,fit);
  await getFirestore().collection('readiness_submissions').add({createdAt:FieldValue.serverTimestamp(),ruleVersion:roadmap.version,answers,fit,roadmap,source:'creator-pivot-summit'});
  return res.status(200).json({success:true,roadmap});
- }catch(e){console.error('Roadmap backend failure',e?.message);return fail(503,'The roadmap service is temporarily unavailable');}
+ catch(e){
+  console.error('Roadmap backend failure', {
+    message: e?.message,
+    cause: e?.cause?.message,
+    code: e?.cause?.code
+  });
+  return fail(503,'The roadmap service is temporarily unavailable');
+}
 });
