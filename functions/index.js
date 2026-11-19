@@ -5,7 +5,11 @@ import {defineSecret} from 'firebase-functions/params';
 import {evaluate,questions} from './engine.js';
 initializeApp();
 const turnstileSecret=defineSecret('TURNSTILE_SECRET');
-const allowedHosts=new Set(['aiqbomap.profitablepenny.com','be2fe016-ai-quickbooks-readiness-map.profitablepenny.workers.dev']);
+const allowedHosts=new Set([
+  'aiqbomap.profitablepenny.com',
+  'be2fe016-ai-quickbooks-readiness-map.profitablepenny.workers.dev',
+  'firebase-migration-2026-11-17-ai-quickbooks-readiness-map.profitablepenny.workers.dev'
+]);
 const origins=new Set([...allowedHosts].map(host=>'https://'+host));
 export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSecret],maxInstances:10,timeoutSeconds:30},async(req,res)=>{
  const origin=req.get('origin');
