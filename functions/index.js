@@ -28,10 +28,7 @@ export const readinessRoadmap=onRequest({region:'us-east1',secrets:[turnstileSec
  try{
  const body=new URLSearchParams({secret:turnstileSecret.value(),response:turnstileToken,remoteip:req.ip||''});
  const check=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body,signal:AbortSignal.timeout(8000)});
- if(!check.ok) {
-  console.error('Turnstile HTTP error', check.status, (await check.text()).slice(0, 500));
-  throw Error(`Turnstile HTTP status: ${check.status}`);
-}
+if(!check.ok)throw Error(`Turnstile HTTP status: ${check.status}`);
  const verified=await check.json();
  if(!verified.success||!allowedHosts.has(verified.hostname))return fail(403,'Verification failed; please try again');
  const roadmap=evaluate(answers,fit);
