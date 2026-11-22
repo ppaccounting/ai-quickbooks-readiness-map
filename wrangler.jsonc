@@ -1,0 +1,8 @@
+{
+  "name": "ai-quickbooks-readiness-map",
+  "compatibility_date": "2026-11-10",
+  "assets": {
+    "directory": "./public"
+  },
+  "previews": {}
+}
